@@ -249,25 +249,28 @@ app.onError((err, c) => {
   );
 });
 
-// Start server
-const port = parseInt(process.env.PORT || '3001');
-
-console.log(`🚀 Starting Recipe API Server...`);
-console.log(`📍 Server running on http://localhost:${port}`);
-console.log(`\n📚 Available endpoints:`);
-console.log(`   GET  /                                 - Health check`);
-console.log(`   GET  /api/recipes                      - Get all recipes (supports pagination)`);
-console.log(`   GET  /api/recipes/search?q=...         - Search recipes`);
-console.log(`   GET  /api/recipes/:id                  - Get recipe by ID`);
-console.log(`\n💡 Examples:`);
-console.log(`   curl "http://localhost:${port}/api/recipes"`);
-console.log(`   curl "http://localhost:${port}/api/recipes?limit=10&offset=0"`);
-console.log(`   curl "http://localhost:${port}/api/recipes/search?q=鶏肉"`);
-console.log(`\n🛑 Press Ctrl+C to stop the server\n`);
-
-serve({
-  fetch: app.fetch,
-  port,
-});
-
+// Export app for Vercel/Serverless deployment
 export default app;
+
+// Start server only in non-serverless environment
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  const port = parseInt(process.env.PORT || '3001');
+
+  console.log(`🚀 Starting Recipe API Server...`);
+  console.log(`📍 Server running on http://localhost:${port}`);
+  console.log(`\n📚 Available endpoints:`);
+  console.log(`   GET  /                                 - Health check`);
+  console.log(`   GET  /api/recipes                      - Get all recipes (supports pagination)`);
+  console.log(`   GET  /api/recipes/search?q=...         - Search recipes`);
+  console.log(`   GET  /api/recipes/:id                  - Get recipe by ID`);
+  console.log(`\n💡 Examples:`);
+  console.log(`   curl "http://localhost:${port}/api/recipes"`);
+  console.log(`   curl "http://localhost:${port}/api/recipes?limit=10&offset=0"`);
+  console.log(`   curl "http://localhost:${port}/api/recipes/search?q=鶏肉"`);
+  console.log(`\n🛑 Press Ctrl+C to stop the server\n`);
+
+  serve({
+    fetch: app.fetch,
+    port,
+  });
+}
