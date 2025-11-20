@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { API_ENDPOINTS } from "./config";
 
 function RecipeDetail() {
   const { id } = useParams();
@@ -17,7 +18,7 @@ function RecipeDetail() {
     setError(null);
 
     try {
-      const response = await fetch(`http://localhost:3001/api/recipes/${id}`);
+      const response = await fetch(API_ENDPOINTS.getRecipe(id));
 
       if (!response.ok) {
         throw new Error("レシピの取得に失敗しました");

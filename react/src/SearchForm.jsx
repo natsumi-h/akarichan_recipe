@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_ENDPOINTS } from './config';
 
 function SearchForm() {
   const navigate = useNavigate();
@@ -21,9 +22,7 @@ function SearchForm() {
     setSearched(true);
 
     try {
-      const response = await fetch(
-        `http://localhost:3001/api/recipes/search?q=${encodeURIComponent(query)}`
-      );
+      const response = await fetch(API_ENDPOINTS.searchRecipes(query));
 
       if (!response.ok) {
         throw new Error('検索に失敗しました');
