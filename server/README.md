@@ -187,6 +187,61 @@ npm run seed
 2. Supabaseデータベースにレシピをインポート
 3. 処理済みJSONに`done_`プレフィックスを付与
 
+### レシピ検索（CLI）
+
+```bash
+# 単一キーワードで検索
+npm run search -- 鶏肉
+
+# 複数キーワードで検索（AND検索）
+npm run search -- 鶏肉 ヘルシー
+
+# タグで検索
+npm run search -- 和風
+
+# カテゴリと材料で検索
+npm run search -- 主菜 牛肉
+```
+
+**機能:**
+- スペース区切りの複数キーワードでAND検索
+- 材料名、タグ、レシピのタイトル・説明・カテゴリから検索
+- 全角・半角スペースに対応
+- レシピの詳細（材料、タグ）を含む結果を表示
+
+詳細な使い方は [src/api/README.md](src/api/README.md) を参照してください。
+
+### APIサーバー（HTTP/HTTPS）
+
+HonoベースのAPIサーバーを起動して、HTTPリクエストでレシピを検索できます。
+
+```bash
+# 開発モード（ファイル変更を自動検知）
+npm run dev
+
+# 本番モード
+npm run serve
+```
+
+**利用可能なエンドポイント:**
+- `GET /` - ヘルスチェック
+- `GET /api/recipes/search?q=鶏肉` - レシピ検索
+- `GET /api/recipes/:id` - レシピ詳細
+
+**使用例:**
+```bash
+# ヘルスチェック
+curl http://localhost:3000/
+
+# レシピ検索
+curl "http://localhost:3000/api/recipes/search?q=鶏肉"
+
+# 複数キーワードでAND検索
+curl "http://localhost:3000/api/recipes/search?q=主菜%20牛肉"
+```
+
+詳細な使い方は [API_GUIDE.md](API_GUIDE.md) を参照してください。
+
 ## 📝 開発フロー
 
 ### 1. ローカル開発

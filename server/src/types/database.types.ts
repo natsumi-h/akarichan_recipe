@@ -34,6 +34,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      ingredient_synonyms: {
+        Row: {
+          created_at: string | null
+          id: number
+          ingredient_id: number
+          synonym_id: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          ingredient_id: number
+          synonym_id: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          ingredient_id?: number
+          synonym_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_ingredient_synonyms_ingredient"
+            columns: ["ingredient_id"]
+            isOneToOne: false
+            referencedRelation: "ingredients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_ingredient_synonyms_synonym"
+            columns: ["synonym_id"]
+            isOneToOne: false
+            referencedRelation: "synonyms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ingredients: {
         Row: {
           canonical_name: string
@@ -160,6 +196,24 @@ export type Database = {
         }
         Relationships: []
       }
+      synonyms: {
+        Row: {
+          created_at: string | null
+          id: number
+          synonym: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          synonym: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          synonym?: string
+        }
+        Relationships: []
+      }
       tags: {
         Row: {
           description: string | null
@@ -189,7 +243,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      search_recipes_with_synonyms: {
+        Args: {
+          search_query: string
+        }
+        Returns: {
+          id: number
+          title: string
+          description: string
+          category: string
+          created_at: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

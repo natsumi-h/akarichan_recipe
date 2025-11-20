@@ -37,6 +37,60 @@ export class RecipeImporter {
   }
 
   /**
+   * Link an ingredient to matching synonyms in the database
+   * Searches for synonyms that partially match the ingredient's canonical_name or normalized_name
+   */
+  private async linkIngredientToSynonyms(
+    ingredientId: number,
+    canonicalName: string,
+    normalizedName: string
+  ): Promise<void> {
+    // Search for synonyms that match canonical_name or normalized_name (partial match, case-insensitive)
+    const { data: matchingSynonyms, error: synonymError } = await this.supabase
+      .from('synonyms')
+      .select('id, synonym')
+      .or(
+        `synonym.ilike.%${canonicalName}%,synonym.ilike.%${normalizedName}%`
+      );
+
+    if (synonymError) {
+      console.warn(`Error searching synonyms: ${synonymError.message}`);
+      return;
+    }
+
+    if (!matchingSynonyms || matchingSynonyms.length === 0) {
+      return;
+    }
+
+    // Create relationships for each matching synonym
+    for (const synonym of matchingSynonyms) {
+      // Check if relationship already exists
+      const { data: existing } = await this.supabase
+        .from('ingredient_synonyms')
+        .select('id')
+        .eq('ingredient_id', ingredientId)
+        .eq('synonym_id', synonym.id)
+        .maybeSingle();
+
+      if (!existing) {
+        // Create new relationship
+        const { error: linkError } = await this.supabase
+          .from('ingredient_synonyms')
+          .insert({
+            ingredient_id: ingredientId,
+            synonym_id: synonym.id,
+          });
+
+        if (linkError) {
+          console.warn(
+            `Error linking ingredient ${ingredientId} to synonym ${synonym.synonym}: ${linkError.message}`
+          );
+        }
+      }
+    }
+  }
+
+  /**
    * Upsert an ingredient into the database
    * Returns the ingredient ID
    */
@@ -44,19 +98,33 @@ export class RecipeImporter {
     ingredient: RecipeIngredient
   ): Promise<number> {
     // Check if ingredient exists
-    const { data: existing, error: selectError } = await this.supabase
+    // normalized_nameが部分一致するingredientを検索（大文字小文字を区別しない）
+    const { data: existingList, error: selectError } = await this.supabase
       .from('ingredients')
-      .select('id')
-      .eq('canonical_name', ingredient.canonical_name)
-      .eq('normalized_name', ingredient.normalized_name)
-      .maybeSingle();
+      .select('id, canonical_name, normalized_name')
+      .ilike('normalized_name', `%${ingredient.normalized_name}%`)
+      .limit(10);
 
     if (selectError) {
       throw new Error(`Error checking ingredient: ${selectError.message}`);
     }
 
-    if (existing) {
-      return existing.id;
+    // 複数マッチした場合は、最も文字列長が近いものを選択
+    if (existingList && existingList.length > 0) {
+      const bestMatch = existingList.reduce((best, current) => {
+        const currentDiff = Math.abs(current.normalized_name.length - ingredient.normalized_name.length);
+        const bestDiff = Math.abs(best.normalized_name.length - ingredient.normalized_name.length);
+        return currentDiff < bestDiff ? current : best;
+      });
+
+      // 既存のingredientに対してもsynonymリンクを試みる
+      await this.linkIngredientToSynonyms(
+        bestMatch.id,
+        bestMatch.canonical_name,
+        bestMatch.normalized_name
+      );
+
+      return bestMatch.id;
     }
 
     // Insert new ingredient
@@ -77,6 +145,13 @@ export class RecipeImporter {
     if (!inserted) {
       throw new Error('Failed to insert ingredient');
     }
+
+    // Link the newly inserted ingredient to matching synonyms
+    await this.linkIngredientToSynonyms(
+      inserted.id,
+      ingredient.canonical_name,
+      ingredient.normalized_name
+    );
 
     return inserted.id;
   }
