@@ -4,6 +4,10 @@
   "description": "Recipe management project with Supabase",
   "type": "module",
   "scripts": {
+    "build": "tsc",
+    "start": "node dist/server/index.js",
+    "dev": "tsx watch src/server/index.ts",
+    "serve": "tsx src/server/index.ts",
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",
     "supabase:reset": "supabase db reset",
@@ -16,9 +20,7 @@
     "extract": "tsx src/scripts/runExtraction.ts",
     "seed": "tsx src/scripts/runImport.ts",
     "seed:synonyms": "tsx src/scripts/runSynonymImport.ts",
-    "search": "tsx src/scripts/runSearch.ts",
-    "dev": "tsx watch src/server/index.ts",
-    "serve": "tsx src/server/index.ts"
+    "search": "tsx src/scripts/runSearch.ts"
   },
   "keywords": [
     "supabase",

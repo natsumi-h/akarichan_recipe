@@ -26,7 +26,7 @@ export class RecipeList {
     // Fetch recipes with pagination
     const { data: recipes, error: recipesError } = await this.supabase
       .from('recipes')
-      .select('id, title, description, category, created_at')
+      .select('id, title, description, category, created_at, steps_text')
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -117,6 +117,7 @@ export class RecipeList {
         created_at: recipe.created_at || '',
         tags,
         ingredients,
+        steps_text: recipe.steps_text || '',
       };
     });
 
