@@ -16,9 +16,11 @@ Vercelダッシュボードで新しいプロジェクトをインポートす�
 **Root Directory:** `server`
 
 **Build Settings:**
-- Build Command: `npm run build`
+- Build Command: `npm run build` (自動検出されます)
 - Output Directory: (空白のまま)
-- Install Command: `npm install`
+- Install Command: `npm install` (自動検出されます)
+
+※ Vercelは`package.json`の`build`と`start`スクリプトを自動的に検出するため、`vercel.json`は不要です。
 
 ### 2. 環境変数の設定
 
