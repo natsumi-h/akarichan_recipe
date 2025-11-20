@@ -19,8 +19,14 @@ if (!supabaseUrl || !supabaseKey) {
 const app = new Hono();
 
 // CORS configuration
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  process.env.FRONTEND_URL, // 本番環境のフロントエンドURL
+].filter(Boolean) as string[];
+
 app.use('/*', cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+  origin: allowedOrigins.length > 0 ? allowedOrigins : '*',
   allowMethods: ['GET', 'POST', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization'],
 }));

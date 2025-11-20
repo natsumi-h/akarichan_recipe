@@ -30,7 +30,10 @@ Vercelダッシュボードの「Settings」→「Environment Variables」で以
 SUPABASE_URL=https://uhtvjhcludivyltnlusg.supabase.co
 SUPABASE_ANON_KEY=<本番のSupabase Anon Key>
 ANTHROPIC_API_KEY=<Anthropic API Key>
+FRONTEND_URL=<本番フロントエンドURL (例: https://your-frontend.vercel.app)>
 ```
+
+※ `FRONTEND_URL`は、CORSで許可するフロントエンドのURLです。デプロイ後に設定してください。
 
 ### 3. デプロイ
 
