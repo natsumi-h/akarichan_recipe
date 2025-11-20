@@ -3,7 +3,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import dotenv from 'dotenv';
 import { searchRecipesByQuery } from '../lib/recipeSearch.js';
-import { getAllRecipes, getRecipeCount } from '../lib/recipeList.js';
+import { getAllRecipes, getRecipeCount, getRecipeById } from '../lib/recipeList.js';
 
 // Load environment variables
 dotenv.config();
@@ -192,9 +192,8 @@ app.get('/api/recipes/:id', async (c) => {
       );
     }
 
-    // Search by ID (using the search function with empty query and filtering)
-    const results = await searchRecipesByQuery('', supabaseUrl, supabaseKey);
-    const recipe = results.find((r) => r.id === id);
+    // Get recipe by ID
+    const recipe = await getRecipeById(supabaseUrl, supabaseKey, id);
 
     if (!recipe) {
       return c.json(

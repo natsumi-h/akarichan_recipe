@@ -139,6 +139,90 @@ export class RecipeList {
 
     return count || 0;
   }
+
+  /**
+   * Get a single recipe by ID
+   * @param id - Recipe ID
+   * @returns Recipe with full details or null if not found
+   */
+  async getRecipeById(id: number): Promise<RecipeSearchResult | null> {
+    // Fetch the recipe by ID
+    const { data: recipe, error: recipeError } = await this.supabase
+      .from('recipes')
+      .select('id, title, description, category, created_at, steps_text')
+      .eq('id', id)
+      .single();
+
+    if (recipeError || !recipe) {
+      return null;
+    }
+
+    // Fetch tags for this recipe
+    const { data: recipeTags } = await this.supabase
+      .from('recipe_tags')
+      .select(
+        `
+        recipe_id,
+        tags(id, name)
+      `
+      )
+      .eq('recipe_id', id);
+
+    // Fetch ingredients for this recipe
+    const { data: recipeIngredients } = await this.supabase
+      .from('recipe_ingredients')
+      .select(
+        `
+        recipe_id,
+        ingredient_id,
+        original_name,
+        amount,
+        ingredients(canonical_name)
+      `
+      )
+      .eq('recipe_id', id);
+
+    // Build tags array
+    const tags =
+      recipeTags
+        ?.map((rt) => {
+          const tag = rt.tags;
+          if (tag && typeof tag === 'object' && 'id' in tag && 'name' in tag) {
+            return { id: tag.id as number, name: tag.name as string };
+          }
+          return null;
+        })
+        .filter((t): t is { id: number; name: string } => t !== null) || [];
+
+    // Build ingredients array
+    const ingredients =
+      recipeIngredients
+        ?.map((ri) => {
+          const ing = ri.ingredients;
+          const canonical_name =
+            ing && typeof ing === 'object' && 'canonical_name' in ing
+              ? (ing.canonical_name as string)
+              : null;
+
+          return {
+            id: ri.ingredient_id,
+            original_name: ri.original_name,
+            canonical_name,
+            amount: ri.amount,
+          };
+        }) || [];
+
+    return {
+      id: recipe.id,
+      title: recipe.title,
+      description: recipe.description,
+      category: recipe.category,
+      created_at: recipe.created_at || '',
+      tags,
+      ingredients,
+      steps_text: recipe.steps_text || '',
+    };
+  }
 }
 
 /**
@@ -163,4 +247,16 @@ export async function getRecipeCount(
 ): Promise<number> {
   const lister = new RecipeList(supabaseUrl, supabaseKey);
   return lister.getRecipeCount();
+}
+
+/**
+ * Standalone function to get a recipe by ID
+ */
+export async function getRecipeById(
+  supabaseUrl: string,
+  supabaseKey: string,
+  id: number
+): Promise<RecipeSearchResult | null> {
+  const lister = new RecipeList(supabaseUrl, supabaseKey);
+  return lister.getRecipeById(id);
 }
