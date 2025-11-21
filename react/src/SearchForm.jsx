@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_ENDPOINTS } from './config';
 
@@ -9,6 +9,32 @@ function SearchForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searched, setSearched] = useState(false);
+
+  // 初期表示時に全件取得
+  useEffect(() => {
+    fetchAllRecipes();
+  }, []);
+
+  const fetchAllRecipes = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(API_ENDPOINTS.getAllRecipes(100, 0));
+
+      if (!response.ok) {
+        throw new Error('レシピの取得に失敗しました');
+      }
+
+      const data = await response.json();
+      setResults(data.data || []);
+    } catch (err) {
+      setError(err.message);
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -40,9 +66,9 @@ function SearchForm() {
 
   const handleClear = () => {
     setQuery('');
-    setResults([]);
     setError(null);
     setSearched(false);
+    fetchAllRecipes();
   };
 
   const handleRecipeClick = (recipeId) => {
@@ -87,15 +113,15 @@ function SearchForm() {
         </div>
       )}
 
-      {searched && !loading && !error && (
+      {!loading && !error && (
         <div className="search-results">
           <h2 className="results-header">
-            検索結果: {results.length}件
+            {searched ? `検索結果: ${results.length}件` : `全レシピ: ${results.length}件`}
           </h2>
 
           {results.length === 0 ? (
             <div className="no-results">
-              「{query}」に一致するレシピが見つかりませんでした。
+              {searched ? `「${query}」に一致するレシピが見つかりませんでした。` : 'レシピがありません。'}
             </div>
           ) : (
             <div className="results-grid">

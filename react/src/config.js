@@ -10,6 +10,7 @@ export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 // API エンドポイント
 export const API_ENDPOINTS = {
   searchRecipes: (query) => `${API_URL}/api/recipes/search?q=${encodeURIComponent(query)}`,
+  getAllRecipes: (limit = 100, offset = 0) => `${API_URL}/api/recipes?limit=${limit}&offset=${offset}`,
   getRecipe: (id) => `${API_URL}/api/recipes/${id}`,
 };
 
