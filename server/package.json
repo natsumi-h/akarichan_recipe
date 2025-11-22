@@ -10,17 +10,19 @@
     "serve": "tsx src/server/index.ts",
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",
-    "supabase:reset": "supabase db reset",
-    "supabase:studio": "supabase studio",
     "supabase:status": "supabase status",
     "supabase:migration:new": "supabase migration new",
+    "supabase:migration:up": "supabase migration up",
     "supabase:link": "supabase link --project-ref uhtvjhcludivyltnlusg",
     "supabase:db:push": "supabase db push",
+    "supabase:db:reset": "echo '⚠️  WARNING: This will DELETE ALL DATA. Use supabase:migration:up instead.' && supabase db reset",
     "supabase:gen:types": "supabase gen types typescript --local > src/types/database.types.ts",
     "extract": "tsx src/scripts/runExtraction.ts",
     "seed": "tsx src/scripts/runImport.ts",
     "seed:synonyms": "tsx src/scripts/runSynonymImport.ts",
-    "search": "tsx src/scripts/runSearch.ts"
+    "search": "tsx src/scripts/runSearch.ts",
+    "generate:embeddings": "tsx src/scripts/generateEmbeddings.ts",
+    "test:similar": "tsx src/scripts/testSimilarRecipes.ts"
   },
   "keywords": [
     "supabase",
@@ -34,7 +36,8 @@
     "@hono/node-server": "^1.19.6",
     "@supabase/supabase-js": "^2.45.4",
     "dotenv": "^16.4.5",
-    "hono": "^4.10.6"
+    "hono": "^4.10.6",
+    "openai": "^6.9.1"
   },
   "devDependencies": {
     "@types/node": "^22.9.3",

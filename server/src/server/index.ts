@@ -3,7 +3,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import dotenv from 'dotenv';
 import { searchRecipesByQuery } from '../lib/recipeSearch.js';
-import { getAllRecipes, getRecipeCount, getRecipeById } from '../lib/recipeList.js';
+import { getAllRecipes, getRecipeCount, getRecipeById, getSimilarRecipes } from '../lib/recipeList.js';
 
 // Load environment variables
 dotenv.config();
@@ -42,6 +42,7 @@ app.get('/', (c) => {
       list: 'GET /api/recipes',
       search: 'GET /api/recipes/search?q=<query>',
       detail: 'GET /api/recipes/:id',
+      similar: 'GET /api/recipes/:id/similar',
     },
   });
 });
@@ -165,7 +166,7 @@ app.get('/api/recipes/search', async (c) => {
 // Recipe detail endpoint (bonus)
 app.get('/api/recipes/:id', async (c) => {
   try {
-    
+
     const id = parseInt(c.req.param('id'));
 
     if (isNaN(id)) {
@@ -223,6 +224,73 @@ app.get('/api/recipes/:id', async (c) => {
   }
 });
 
+// Similar recipes endpoint
+app.get('/api/recipes/:id/similar', async (c) => {
+  try {
+    const id = parseInt(c.req.param('id'));
+
+    if (isNaN(id)) {
+      return c.json(
+        {
+          success: false,
+          error: 'Invalid recipe ID',
+        },
+        400
+      );
+    }
+
+    // Get limit parameter (default: 5)
+    const limit = parseInt(c.req.query('limit') || '5');
+
+    if (isNaN(limit) || limit < 1 || limit > 20) {
+      return c.json(
+        {
+          success: false,
+          error: 'Invalid limit parameter',
+          message: 'Limit must be between 1 and 20',
+        },
+        400
+      );
+    }
+
+    if (!supabaseUrl || !supabaseKey) {
+      return c.json(
+        {
+          success: false,
+          error: 'Server configuration error',
+        },
+        500
+      );
+    }
+
+    // Get similar recipes
+    const similarRecipes = await getSimilarRecipes(
+      supabaseUrl,
+      supabaseKey,
+      id,
+      limit
+    );
+
+    return c.json({
+      success: true,
+      recipeId: id,
+      count: similarRecipes.length,
+      data: similarRecipes,
+    });
+  } catch (error) {
+    console.error('Error in similar recipes endpoint:', error);
+
+    return c.json(
+      {
+        success: false,
+        error: 'Internal server error',
+        message: error instanceof Error ? error.message : 'Unknown error occurred',
+      },
+      500
+    );
+  }
+});
+
 // 404 handler
 app.notFound((c) => {
   return c.json(
@@ -262,10 +330,12 @@ if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
   console.log(`   GET  /api/recipes                      - Get all recipes (supports pagination)`);
   console.log(`   GET  /api/recipes/search?q=...         - Search recipes`);
   console.log(`   GET  /api/recipes/:id                  - Get recipe by ID`);
+  console.log(`   GET  /api/recipes/:id/similar          - Get similar recipes`);
   console.log(`\n💡 Examples:`);
   console.log(`   curl "http://localhost:${port}/api/recipes"`);
   console.log(`   curl "http://localhost:${port}/api/recipes?limit=10&offset=0"`);
   console.log(`   curl "http://localhost:${port}/api/recipes/search?q=鶏肉"`);
+  console.log(`   curl "http://localhost:${port}/api/recipes/1/similar"`);
   console.log(`\n🛑 Press Ctrl+C to stop the server\n`);
 
   serve({

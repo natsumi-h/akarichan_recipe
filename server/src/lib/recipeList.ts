@@ -141,6 +141,109 @@ export class RecipeList {
   }
 
   /**
+   * Get similar recipes based on embedding similarity
+   * @param recipeId - Recipe ID to find similar recipes for
+   * @param matchCount - Number of similar recipes to return (default: 5)
+   * @returns Array of similar recipes with similarity scores
+   */
+  async getSimilarRecipes(
+    recipeId: number,
+    matchCount: number = 5
+  ): Promise<(RecipeSearchResult & { similarity: number })[]> {
+    // Call the get_similar_recipes RPC function
+    const { data: similarRecipes, error } = await this.supabase
+      .rpc('get_similar_recipes', {
+        recipe_id: recipeId,
+        match_count: matchCount,
+      });
+
+    if (error) {
+      console.error(`Error fetching similar recipes: ${error.message}`);
+      throw new Error(`Error fetching similar recipes: ${error.message}`);
+    }
+
+    if (!similarRecipes || similarRecipes.length === 0) {
+      return [];
+    }
+
+    const recipeIds = similarRecipes.map((r: any) => r.id);
+
+    // Fetch tags for all similar recipes
+    const { data: recipeTags } = await this.supabase
+      .from('recipe_tags')
+      .select(
+        `
+        recipe_id,
+        tags(id, name)
+      `
+      )
+      .in('recipe_id', recipeIds);
+
+    // Fetch ingredients for all similar recipes
+    const { data: recipeIngredients } = await this.supabase
+      .from('recipe_ingredients')
+      .select(
+        `
+        recipe_id,
+        ingredient_id,
+        original_name,
+        amount,
+        ingredients(canonical_name)
+      `
+      )
+      .in('recipe_id', recipeIds);
+
+    // Build result array
+    const results = similarRecipes.map((recipe: any) => {
+      // Get tags for this recipe
+      const tags =
+        recipeTags
+          ?.filter((rt) => rt.recipe_id === recipe.id)
+          .map((rt) => {
+            const tag = rt.tags;
+            if (tag && typeof tag === 'object' && 'id' in tag && 'name' in tag) {
+              return { id: tag.id as number, name: tag.name as string };
+            }
+            return null;
+          })
+          .filter((t): t is { id: number; name: string } => t !== null) || [];
+
+      // Get ingredients for this recipe
+      const ingredients =
+        recipeIngredients
+          ?.filter((ri) => ri.recipe_id === recipe.id)
+          .map((ri) => {
+            const ing = ri.ingredients;
+            const canonical_name =
+              ing && typeof ing === 'object' && 'canonical_name' in ing
+                ? (ing.canonical_name as string)
+                : null;
+
+            return {
+              id: ri.ingredient_id,
+              original_name: ri.original_name,
+              canonical_name,
+              amount: ri.amount,
+            };
+          }) || [];
+
+      return {
+        id: recipe.id,
+        title: recipe.title,
+        description: recipe.description,
+        category: recipe.category,
+        created_at: recipe.created_at || '',
+        tags,
+        ingredients,
+        steps_text: recipe.steps_text || '',
+        similarity: recipe.similarity,
+      };
+    });
+
+    return results;
+  }
+
+  /**
    * Get a single recipe by ID
    * @param id - Recipe ID
    * @returns Recipe with full details or null if not found
@@ -259,4 +362,17 @@ export async function getRecipeById(
 ): Promise<RecipeSearchResult | null> {
   const lister = new RecipeList(supabaseUrl, supabaseKey);
   return lister.getRecipeById(id);
+}
+
+/**
+ * Standalone function to get similar recipes
+ */
+export async function getSimilarRecipes(
+  supabaseUrl: string,
+  supabaseKey: string,
+  recipeId: number,
+  matchCount?: number
+): Promise<(RecipeSearchResult & { similarity: number })[]> {
+  const lister = new RecipeList(supabaseUrl, supabaseKey);
+  return lister.getSimilarRecipes(recipeId, matchCount);
 }

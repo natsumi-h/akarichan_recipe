@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { createRecipeExtractor } from '../lib/recipeExtractor.js';
 import type { RecipeJSON } from '../lib/recipeImporter.js';
+import { createOpenAIClient, createRecipeText, generateEmbedding } from '../lib/embeddingGenerator.js';
 
 // Load environment variables
 dotenv.config();
@@ -39,6 +40,7 @@ async function main() {
   console.log('🎨 Starting recipe extraction from screenshots...\n');
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
+  const openaiApiKey = process.env.OPENAI_API_KEY;
 
   if (!apiKey) {
     throw new Error('Missing ANTHROPIC_API_KEY environment variable');
@@ -46,6 +48,15 @@ async function main() {
 
   // Create extractor instance
   const extractor = createRecipeExtractor(apiKey);
+
+  // Initialize OpenAI client (optional - only if API key is provided)
+  let openai: ReturnType<typeof createOpenAIClient> | null = null;
+  if (openaiApiKey) {
+    openai = createOpenAIClient(openaiApiKey);
+    console.log('✅ OpenAI client initialized for embedding generation\n');
+  } else {
+    console.log('⚠️  OPENAI_API_KEY not found - embeddings will not be generated\n');
+  }
 
   const screenshotsDir = join(__dirname, '../../screenshots');
   const seedDir = join(__dirname, '../../seed');
@@ -78,6 +89,33 @@ async function main() {
         const recipeJSON: RecipeJSON = await extractor.extractRecipeFromImage(imagePath);
 
         console.log(`  ✅ Extracted ${recipeJSON.recipes.length} recipe(s) from image`);
+
+        // Generate embeddings for each recipe (if OpenAI client is available)
+        if (openai) {
+          console.log('  🔢 Generating embeddings...');
+          for (let i = 0; i < recipeJSON.recipes.length; i++) {
+            const recipe = recipeJSON.recipes[i];
+            try {
+              const recipeText = createRecipeText(recipe);
+              const embedding = await generateEmbedding(openai, recipeText);
+
+              // Add embedding to recipe object
+              (recipe as any).embedding = embedding;
+
+              console.log(`     ✅ Generated embedding for: ${recipe.title} (${embedding.length} dimensions)`);
+
+              // Small delay to avoid rate limits
+              if (i < recipeJSON.recipes.length - 1) {
+                await new Promise((resolve) => setTimeout(resolve, 100));
+              }
+            } catch (embeddingError) {
+              console.error(`     ⚠️  Failed to generate embedding for: ${recipe.title}`);
+              if (embeddingError instanceof Error) {
+                console.error(`        Error: ${embeddingError.message}`);
+              }
+            }
+          }
+        }
 
         // Generate filename based on recipe titles
         let filename: string;

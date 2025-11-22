@@ -19,6 +19,7 @@ export interface RecipeData {
   tags: string[];
   ingredients: RecipeIngredient[];
   steps: string[];
+  embedding?: number[];
 }
 
 export interface RecipeJSON {
@@ -236,6 +237,7 @@ export class RecipeImporter {
         category: recipe.category,
         steps_text: stepsText,
         source_image_url: null,
+        embedding: recipe.embedding ? JSON.stringify(recipe.embedding) : null,
       })
       .select('id')
       .single();
