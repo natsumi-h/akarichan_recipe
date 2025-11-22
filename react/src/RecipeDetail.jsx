@@ -8,9 +8,12 @@ function RecipeDetail() {
   const [recipe, setRecipe] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [similarRecipes, setSimilarRecipes] = useState([]);
+  const [similarLoading, setSimilarLoading] = useState(false);
 
   useEffect(() => {
     fetchRecipeDetail();
+    fetchSimilarRecipes();
   }, [id]);
 
   const fetchRecipeDetail = async () => {
@@ -33,8 +36,32 @@ function RecipeDetail() {
     }
   };
 
+  const fetchSimilarRecipes = async () => {
+    setSimilarLoading(true);
+
+    try {
+      const response = await fetch(API_ENDPOINTS.getSimilarRecipes(id, 5));
+
+      if (!response.ok) {
+        console.error("類似レシピの取得に失敗しました");
+        return;
+      }
+
+      const data = await response.json();
+      setSimilarRecipes(data.data || []);
+    } catch (err) {
+      console.error("類似レシピの取得エラー:", err);
+    } finally {
+      setSimilarLoading(false);
+    }
+  };
+
   const handleBack = () => {
     navigate("/");
+  };
+
+  const handleRecipeClick = (recipeId) => {
+    navigate(`/recipe/${recipeId}`);
   };
 
   console.log(recipe);
@@ -138,6 +165,43 @@ function RecipeDetail() {
           </div>
         )}
       </div>
+
+      {/* Similar Recipes Section */}
+      {similarRecipes.length > 0 && (
+        <div className="similar-recipes-section">
+          <h2 className="similar-recipes-title">こちらもおすすめ</h2>
+          {similarLoading ? (
+            <div className="loading">読み込み中...</div>
+          ) : (
+            <div className="similar-recipes-grid">
+              {similarRecipes.map((similar) => (
+                <div
+                  key={similar.id}
+                  className="similar-recipe-card"
+                  onClick={() => handleRecipeClick(similar.id)}
+                >
+                  <h3 className="similar-recipe-title">{similar.title}</h3>
+                  {similar.category && (
+                    <div className="similar-recipe-category">
+                      {similar.category}
+                    </div>
+                  )}
+                  {similar.description && (
+                    <p className="similar-recipe-description">
+                      {similar.description}
+                    </p>
+                  )}
+                  {similar.similarity && (
+                    <div className="similarity-score">
+                      類似度: {(similar.similarity * 100).toFixed(0)}%
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
