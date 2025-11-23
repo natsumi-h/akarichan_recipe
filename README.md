@@ -57,6 +57,9 @@
   ]
   }
   ```
+- RPCで呼び出し
+  - synonyms、材料、タイトル、ディスクリプション、カテゴリ、タグを横断で検索
+  https://github.com/natsumi-h/akarichan_recipe/blob/58f565fc27e522f2790e21489b2202356fb22e14/server/supabase/migrations/20251120122229_update_search_function_with_recipe_fields.sql#L4-L52
 
 ## 「こちらもおすすめ」実装
 
