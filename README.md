@@ -1,67 +1,53 @@
-# あかりちゃんレシピ検索
+# akarichan_recipe with OpenAI Vector Embeddings
 
-Supabase + Hono + React で構築されたレシピ検索アプリケーション
+レシピアプリの検索＆レコメンド機能開発から考えるクエリ、インデックス効率化
 
-## プロジェクト構成
+### Motivation
 
-```
-akarichan_recipe/
-├── server/          # バックエンド（Hono + Supabase）
-│   ├── src/         # ソースコード
-│   ├── supabase/    # Supabase設定・マイグレーション
-│   ├── seed/        # レシピデータ
-│   ├── synonyms/    # シノニムデータ
-│   └── .env         # 環境変数（gitignore対象）
-│
-└── react/           # フロントエンド（React + Vite）
-    ├── src/         # ソースコード
-    └── .env         # 環境変数（gitignore対象）
-```
+- Inspire Highの複数のプロダクト間での意味的な連携を生成して、問いを深められる体験をどのように実現できるか？ということが思考の棚に眠っていました。
+- カテゴリーやタグなどの付与をユーザーや管理者が属人的に実施すると膨大なメンテナンスコストが発生するため、なにか他の方法で実現できないか、考えました。
+- さらに同時に思考の棚にあった、「日本語というマルチキャラクターであり、言い換え表現も多く、かつ最小限の意味単位をスペースで区切ることができない特殊な言語において、一般的なソフトウェアでどのように検索アルゴリズムが実装されているのか」ということを考えるために、個人的なUSを実現するレシピ検索アプリのMVPを開発しました。
 
-## セットアップ
+### Who is 長谷川あかり
 
-### 1. サーバー側の環境変数
+- 多作。SNSベースで活動しているのでフロー型。書籍は多数出ているが検索性、アクセスの容易さに欠ける
+    - Instagtram
+    - Twitter
+    - Amazon
 
-詳細は `server/.env.example` を参照してください。
+### Pain Point    
+- ちゃんとDB化して辞書引きしたい
+- 薬味をふんだんに使うので一度に使い切れない事象が発生する
+    - ex. 次の日もしょうがを消費するために別のしょうがのレシピも探したい
+- 書籍は表記ゆれがない。鳥↔鶏肉、大葉↔しそ、大根↔だいこん、生姜↔しょうがレシピうまくひっかからないのは困る
 
-```bash
-cd server
-cp .env.example .env
-# .env を編集してSupabase認証情報を設定
-```
+### 達成したかったUS
 
-### 2. React側の環境変数
+- ユーザーは、検索ワードに対して完全表記一致したレシピだけではなく、意味的に一致するレシピが一覧できる。
+    - 全文検索は断念、かわりにLIKEとsynonymsのかけあわせで実現
+- ユーザーは、閲覧しているレシピに基づいた類似のレシピを一覧できる。（レコメンデーション機能）
+    - Open AI Vecror Embeddings
 
-詳細は `react/.env.example` を参照してください。
 
-```bash
-cd react
-cp .env.example .env.local
-# .env.local を編集してAPI URLを設定
-```
+### 検索機能実装
 
-## 開発
+- synonymsとのリレーション
+    - JSONデータ生成
+    - 牛細切れ肉⇒ぎゅうこまぎれにくで、ingredientsに登録
+    - synonyms.canonicalname（とり、ぶた、にんにくなど）が、部分一致するingredientsがあれば、そのingredientsと、synonyms.synonymsのすべてとリレーションを結ぶ
 
-### サーバー起動
+### 「こちらもおすすめ」実装
 
-```bash
-cd server
-npm install
-npm run supabase:start  # ローカルSupabaseを起動
-npm run dev             # APIサーバーを起動
-```
+- ts_vectorによる全文検索（日本語は対象外だったので断念）
+- Elastic Search（ハードル高くて今回は留保）
+- **Embedding(vector) x OpenAI Vector embeddings**
+    - コスト
+    - ベクトルとは
+        - テキスト、画像、音声などのデータを機械学習モデル（特に大規模言語モデル/LLM）によって数値の配列（**埋め込み/Embedding**）として表現したものです。これにより、データ間の意味的な類似性を計算できます。
+        - ベクトルデータの最も重要な用途は、**類似性検索（Similarity Search）**です。
+        `pgvector`を使用すると、特定のベクトルに「最も近い」ベクトル（つまり、意味的に最も類似したデータ）を見つけることができます。
 
-### Reactアプリ起動
+### まとめ
 
-```bash
-cd react
-npm install
-npm run dev
-```
-
-## デプロイ
-
-各プロジェクトの環境変数ファイルを本番用に設定してからデプロイしてください。
-
-- サーバー: `server/.env.production`
-- React: `react/.env.production`
+- 日本語DBで検索クエリを開発をすることの難しさ
+- 今後そこをAIが埋めてくれるかも
