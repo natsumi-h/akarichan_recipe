@@ -30,12 +30,13 @@
 
 
 ## 検索機能実装
-
+- DBスキーマ
+<img width="917" height="675" alt="supabase-schema-uhtvjhcludivyltnlusg" src="https://github.com/user-attachments/assets/f715a5b6-3111-43db-9dda-c4cf8e784c93" />
 - synonymsとのリレーション
-    - JSONデータ生成
-    - 牛細切れ肉⇒ぎゅうこまぎれにくで、ingredientsに登録
+    - レシピのJSONデータ生成（Claude Codeで自動解析）
+    - 牛細切れ肉⇒ぎゅうこまぎれにくで正規化し、ingredientsに登録
     - synonyms.canonicalname（とり、ぶた、にんにくなど）が、部分一致するingredientsがあれば、そのingredientsと、synonyms.synonymsのすべてとリレーションを結ぶ
-
+      
 ## 「こちらもおすすめ」実装
 
 - ts_vectorによる全文検索（日本語は対象外だったので断念）
