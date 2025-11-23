@@ -20,12 +20,17 @@ async function main() {
   console.log("🚀 Starting recipe import process...\n");
 
   const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_ANON_KEY;
+  // Use SERVICE_ROLE_KEY for admin operations (bypasses RLS)
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
     throw new Error(
-      "Missing Supabase environment variables (SUPABASE_URL or SUPABASE_ANON_KEY)"
+      "Missing Supabase environment variables (SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY)"
     );
+  }
+
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.warn("⚠️  Warning: Using ANON_KEY. For write operations after RLS is enabled, use SUPABASE_SERVICE_ROLE_KEY\n");
   }
 
   // Create importer instance

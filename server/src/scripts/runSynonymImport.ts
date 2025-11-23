@@ -19,11 +19,16 @@ async function importSynonyms() {
 
   // Get Supabase credentials
   const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_ANON_KEY;
+  // Use SERVICE_ROLE_KEY for admin operations (bypasses RLS)
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
     console.error("❌ Missing Supabase credentials in .env file");
     process.exit(1);
+  }
+
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.warn("⚠️  Warning: Using ANON_KEY. For write operations after RLS is enabled, use SUPABASE_SERVICE_ROLE_KEY\n");
   }
 
   const supabase = createClient(supabaseUrl, supabaseKey);
