@@ -11,9 +11,9 @@
 ## Who is 長谷川あかり
 
 - 多作。SNSベースで活動しているのでフロー型。書籍は多数出ているが検索性、アクセスの容易さに欠ける
-    - Instagtram
+    - [Instagtram](https://www.instagram.com/akari_hasegawa0105/?hl=ja)
     - [X](https://x.com/akari_hasegawa?lang=ja)
-    - Amazon
+    - [Amazon](https://www.amazon.co.jp/stores/author/B0D9LHZGKJ?ingress=0&visitId=2267d384-b4a9-42c0-b58a-0cfc86bd0f7c&ref_=sr_ntt_srch_lnk_1)
 
 ## Pain Points
 - ちゃんとDB化して辞書引きしたい
