@@ -12,7 +12,7 @@
 
 - 多作。SNSベースで活動しているのでフロー型。書籍は多数出ているが検索性、アクセスの容易さに欠ける
     - Instagtram
-    - Twitter
+    - [X](https://x.com/akari_hasegawa?lang=ja)
     - Amazon
 
 ## Pain Points
