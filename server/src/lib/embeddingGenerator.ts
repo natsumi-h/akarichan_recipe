@@ -8,11 +8,13 @@ export function createRecipeText(recipe: {
   title: string;
   description: string | null;
   category: string | null;
+  steps_text: string | null;
 }): string {
   const parts = [
     `タイトル: ${recipe.title}`,
     recipe.description && `説明: ${recipe.description}`,
     recipe.category && `カテゴリ: ${recipe.category}`,
+    recipe.steps_text && `手順: ${recipe.steps_text}`,
   ].filter(Boolean);
 
   return parts.join('\n');

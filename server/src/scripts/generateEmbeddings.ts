@@ -10,7 +10,13 @@ dotenv.config();
  * Main function to generate embeddings for recipes without them
  */
 async function main() {
+  // Check for --force flag to regenerate all embeddings
+  const forceRegenerate = process.argv.includes('--force');
+
   console.log('🔢 Starting embedding generation for existing recipes...\n');
+  if (forceRegenerate) {
+    console.log('⚠️  Force mode: Regenerating ALL embeddings (including existing ones)\n');
+  }
 
   const openaiApiKey = process.env.OPENAI_API_KEY;
   const supabaseUrl = process.env.SUPABASE_URL;
@@ -33,11 +39,16 @@ async function main() {
   console.log('✅ Supabase client initialized\n');
 
   try {
-    // Find recipes without embeddings
-    const { data: recipes, error: fetchError } = await supabase
+    // Find recipes - either all or only those without embeddings
+    let query = supabase
       .from('recipes')
-      .select('id, title, description, category')
-      .is('embedding', null);
+      .select('id, title, description, category, steps_text');
+
+    if (!forceRegenerate) {
+      query = query.is('embedding', null);
+    }
+
+    const { data: recipes, error: fetchError } = await query;
 
     if (fetchError) {
       throw new Error(`Error fetching recipes: ${fetchError.message}`);
@@ -62,6 +73,7 @@ async function main() {
           title: recipe.title,
           description: recipe.description,
           category: recipe.category,
+          steps_text: recipe.steps_text,
         });
 
         // Generate embedding
