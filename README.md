@@ -30,10 +30,10 @@
   - Open AI Vecror Embeddings
 
 ## 検索機能実装
-- DBスキーマ
+### DBスキーマ
 <img width="917" height="675" alt="supabase-schema-uhtvjhcludivyltnlusg" src="https://github.com/user-attachments/assets/f715a5b6-3111-43db-9dda-c4cf8e784c93" />
 
-- synonymsとのリレーション
+### synonymsとのリレーション
     - レシピのJSONデータ生成（Claude Codeで自動解析）
     - 牛細切れ肉⇒ぎゅうこまぎれにくで正規化し、ingredientsに登録
     - synonyms.canonicalname（とり、ぶた、にんにくなど）が、部分一致するingredientsがあれば、そのingredientsと、synonyms.synonymsのすべてとリレーションを結ぶ
@@ -57,21 +57,23 @@
   ]
   }
   ```
-- RPCで呼び出し
+### RPCで呼び出し
   - synonyms、材料、タイトル、ディスクリプション、カテゴリ、タグを横断で検索
   https://github.com/natsumi-h/akarichan_recipe/blob/58f565fc27e522f2790e21489b2202356fb22e14/server/supabase/migrations/20251120122229_update_search_function_with_recipe_fields.sql#L4-L52
 
 ## 「こちらもおすすめ」実装
 
 
-- **Embedding(pgvector) x OpenAI Vector embeddings**
-  
+### **Embedding(pgvector) x OpenAI Vector embeddings**
+  - https://platform.openai.com/docs/guides/embeddings
   - ベクトルとは
     - テキスト、画像、音声などのデータを機械学習モデル（特に大規模言語モデル/LLM）によって数値の配列（**埋め込み/Embedding**）として表現したものです。これにより、データ間の意味的な類似性を計算できます。
-    - ベクトルデータの最も重要な用途は、**類似性検索（Similarity Search）**です。
-      `pgvector`を使用すると、特定のベクトルに「最も近い」ベクトル（つまり、意味的に最も類似したデータ）を見つけることができます。
+    - ベクトルデータの最も重要な用途は、 **類似性検索（Similarity Search）** です。`pgvector`を使用すると、特定のベクトルに「最も近い」ベクトル（つまり、意味的に最も類似したデータ）を見つけることができます。
+      
       <img width="389" height="185" alt="Screenshot 2025-11-23 at 1 53 44 PM" src="https://github.com/user-attachments/assets/0bee3219-6c78-429d-a656-1daf48af62ab" />
 
+https://github.com/natsumi-h/akarichan_recipe/blob/9aa86a17da253df2e9d6cb31a45ad83822b39a2f/server/src/lib/embeddingGenerator.ts#L30-L45
+  
   - コスト
     - レシピ30件で$0.00060くらいだった
 
