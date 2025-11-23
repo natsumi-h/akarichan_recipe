@@ -63,14 +63,21 @@
 
 ## 「こちらもおすすめ」実装
 
-- ts_vector による全文検索（日本語は対象外だったので断念）
-- Elastic Search（ハードル高くて今回は断念）
-- **Embedding(vector) x OpenAI Vector embeddings**
-  - コスト
+
+- **Embedding(pgvector) x OpenAI Vector embeddings**
+  
   - ベクトルとは
     - テキスト、画像、音声などのデータを機械学習モデル（特に大規模言語モデル/LLM）によって数値の配列（**埋め込み/Embedding**）として表現したものです。これにより、データ間の意味的な類似性を計算できます。
     - ベクトルデータの最も重要な用途は、**類似性検索（Similarity Search）**です。
       `pgvector`を使用すると、特定のベクトルに「最も近い」ベクトル（つまり、意味的に最も類似したデータ）を見つけることができます。
+      <img width="389" height="185" alt="Screenshot 2025-11-23 at 1 53 44 PM" src="https://github.com/user-attachments/assets/0bee3219-6c78-429d-a656-1daf48af62ab" />
+
+  - コスト
+    - レシピ30件で$0.00060くらいだった
+
+### その他の類似性検索の実装方法
+- ts_vector による全文検索（日本語は対象外だったので断念）
+- Elastic Search（ハードル高くて今回は断念）
 
 ## まとめ
 
