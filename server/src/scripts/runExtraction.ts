@@ -96,7 +96,12 @@ async function main() {
           for (let i = 0; i < recipeJSON.recipes.length; i++) {
             const recipe = recipeJSON.recipes[i];
             try {
-              const recipeText = createRecipeText(recipe);
+              const recipeText = createRecipeText({
+                title: recipe.title,
+                description: recipe.description,
+                category: recipe.category,
+                steps_text: recipe.steps.join('\n'),
+              });
               const embedding = await generateEmbedding(openai, recipeText);
 
               // Add embedding to recipe object
