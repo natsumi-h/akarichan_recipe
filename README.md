@@ -80,6 +80,7 @@ https://github.com/natsumi-h/akarichan_recipe/blob/9aa86a17da253df2e9d6cb31a45ad
 ### その他の類似性検索の実装方法
 - ts_vector による全文検索（日本語は対象外だったので断念）
 - Elastic Search（ハードル高くて今回は断念）
+- グラフデータベース（AgensGraph/Cypher）
 
 ## まとめ
 
