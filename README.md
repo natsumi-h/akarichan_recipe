@@ -34,7 +34,7 @@
 <img width="917" height="675" alt="supabase-schema-uhtvjhcludivyltnlusg" src="https://github.com/user-attachments/assets/f715a5b6-3111-43db-9dda-c4cf8e784c93" />
 
 ### synonymsとのリレーション
-- レシピのJSONデータ生成（Claude Codeで自動解析）
+- レシピのJSONデータ生成（Claude Codeでレシピのスクリーンショットを画像解析）
 - 牛細切れ肉⇒ぎゅうこまぎれにくで正規化し、ingredientsに登録
 - synonyms.canonicalname（とり、ぶた、にんにくなど）が、部分一致するingredientsがあれば、そのingredientsと、synonyms.synonymsのすべてとリレーションを結ぶ
 
